@@ -730,38 +730,30 @@ public:
     }
 
 #ifdef USE_BM
-    template <typename TargetType_t, DataType DataType_t, typename LayOutType_t>
-    SaberStatus copy_from<BM, AK_BM, NCHW>(const Tensor<TargetType_t, DataType_t, LayOutType_t>& tensor) {
+    //template <typename TargetType_t, DataType DataType_t, typename LayOutType_t>
+    SaberStatus copy_from<BM, AK_BM, NCHW>(const Tensor<X86, AK_FLOAT, NCHW>& tensor) {
 
         CHECK_EQ(valid_size(), tensor.valid_size()) \
             << "sizes of two valid shapes must be the same";
 
         /// copy from system to device
-        if (typeid(BM) == typeid(targetType_t) &&
-            typeid(AK_BM) == typeid(datatype) &&
-            typeid(X86) == typeid(TargetType_t) &&
-            typeid(AK_FLOAT) == typeid(DataType_t)){
+        Dtype* device_data_ptr = mutable_data();
+        BMDNN_CHECK(bm_memcpy_s2d(API::get_handler(), *device_data_ptr, bm_mem_from_system(tensor.data())));
 
-            Dtype* device_data_ptr = mutable_data();
-            BMDNN_CHECK(bm_memcpy_s2d(API::get_handler(), *device_data_ptr, bm_mem_from_system(tensor.data())));
+        return SaberSuccess;
+    };
 
-            return SaberSuccess;
-        }
+    SaberStatus copy_from<X86, AK_FLOAT, NCHW>(const Tensor<BM, AK_BM, NCHW>& tensor) {
+
+        CHECK_EQ(valid_size(), tensor.valid_size()) \
+            << "sizes of two valid shapes must be the same";
 
         /// copy from device to system
-        /*if (typeid(X86) == typeid(targetType_t) &&
-            typeid(AK_FLOAT) == typeid(datatype) &&
-            typeid(BM) == typeid(TargetType_t) &&
-            typeid(AK_BM) == typeid(DataType_t)){
-
-            auto* device_data_ptr = tensor.data();
-            BMDNN_CHECK(bm_memcpy_s2d(API::get_handler(), bm_mem_from_system(mutable_data()), *device_data_ptr));
-
-            return SaberSuccess;
-        }*/
+        auto* device_data_ptr = tensor.data();
+        BMDNN_CHECK(bm_memcpy_s2d(API::get_handler(), bm_mem_from_system(mutable_data()), *device_data_ptr));
 
         /// other types are not allowed here
-        return SaberInvalidValue;
+        return SaberSuccess;
     };
 #endif
 
