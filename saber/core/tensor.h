@@ -731,7 +731,7 @@ public:
 
 #ifdef USE_BM
     template <typename TargetType_t, DataType DataType_t, typename LayOutType_t>
-    SaberStatus copy_from(const Tensor<TargetType_t, DataType_t, LayOutType_t>& tensor) {
+    SaberStatus copy_from<BM, AK_BM, NCHW>(const Tensor<TargetType_t, DataType_t, LayOutType_t>& tensor) {
 
         CHECK_EQ(valid_size(), tensor.valid_size()) \
             << "sizes of two valid shapes must be the same";
